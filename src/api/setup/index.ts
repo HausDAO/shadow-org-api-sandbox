@@ -1,6 +1,5 @@
 import express from "express";
 
-import MessageResponse from "../../interfaces/MessageResponse";
 import discord from "./discord";
 import { apiKeyAuth } from "../../middlewares";
 

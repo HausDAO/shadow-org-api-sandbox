@@ -1,68 +1,68 @@
-// import { Client, GatewayIntentBits, TextChannel } from "discord.js";
-import dotenv from "dotenv";
-dotenv.config();
-
 import express from "express";
+import {
+  buildPrompt,
+  callLlm,
+  findChannelContext,
+  findCharacterContext,
+  findOrg,
+  findPersona,
+  presenterFunctions,
+} from "../util/stubs";
 
 const router = express.Router();
 
-type TalkResponse = string[];
+type TalkResponse = { message: string };
 
-router.post<{}, TalkResponse>("/", (req, res) => {
-  //  body has server, channel, source, message
-  //  pretend find persona
-  //  pretend load persona context
-  //  pretend load context message chunk
-  //  pretend find function based on persona or whatever?
-  //  make llm prompt with all this
-  //  create pretend message
+router.post<{}, TalkResponse>("/", async (req, res, next) => {
+  console.log("FOUND");
+  try {
+    const { channelId } = req.body;
+    // todo: probably lots of validation
+    console.log("req body", req.body);
 
-  // const jsonData = req.body;
+    if (!channelId) throw "missing channelId";
 
-  // if (jsonData.apiKey !== process.env.API_KEY) {
-  //   throw "missing api key";
-  // }
-  // console.log("req body", jsonData);
+    // load data to identify persona/org/channel/ect..
+    // todo: what is the most generic input we can take here to identify needed db elements
+    // find org, persona, communication channel (discord/farcaster/adminui), ect...
+    // maybe api requires a source field int eh body so we know where to spit back at
+    const org = await findOrg(channelId);
+    console.log("org", org);
+    const persona = await findPersona(channelId);
+    const channelType = "discord";
+    // const channelType = "adminUi";
 
-  // const channelId = "687036812769755137";
+    // load data to seed llm context
 
-  // const client = new Client({
-  //   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
-  // });
-  // if (!client) throw "no client";
+    const characterContext = await findCharacterContext(persona.id);
+    const channelContext = await findChannelContext(persona.id, channelId);
+    // how will we get other data related to functions the persona has
+    // and how is the cirrect function selected?
 
-  // client.once("ready", async () => {
-  //   console.log(`Logged in as ${client.user?.tag}!`);
+    const prompt = await buildPrompt(
+      channelContext.context,
+      characterContext.context,
+      persona
+    );
 
-  //   try {
-  //     // Get the channel
-  //     const channel = await client.channels.fetch(channelId);
+    const llmResponse = await callLlm(prompt.prompt);
 
-  //     if (!channel) {
-  //       console.error("Channel not found!");
-  //       throw "Channel not found!";
-  //     }
+    // todo: do we save the message for future channel chunks?
 
-  //     const animal = jsonData.message || "cat";
+    // now need to determin the method to return/present the data
+    // adminui just returns the message in res for the chat window
+    // discord triggers the respons with discord.js
 
-  //     // Send the message
-  //     await (channel as TextChannel).send(
-  //       `MEEEOOOOOOOOWWWWWW, I'm a ${animal} 🤖`
-  //     );
-  //     console.log("Message sent successfully!");
+    const presenterFn = presenterFunctions[channelType];
 
-  //     // Optional: Disconnect the bot after sending the message
-  //     client.destroy();
-  //   } catch (error) {
-  //     console.error("Error sending message:", error);
-  //   }
-  // });
+    await presenterFn({ channelId, message: llmResponse.reply });
 
-  // client
-  //   .login(process.env.DISCORD_BOT_TOKEN)
-  //   .catch((err) => console.error("Failed to login:", err));
-
-  res.json(["🤖", "😳", "🤖"]);
+    // ok to awlays return this?
+    res.json({ message: llmResponse.reply });
+  } catch (error) {
+    console.error("Error:", error);
+    next(error);
+  }
 });
 
 export default router;
