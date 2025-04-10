@@ -1,11 +1,11 @@
 import { Client, GatewayIntentBits, TextChannel } from "discord.js";
 import { DISCORD_BOT_TOKEN } from "../config";
-import { PreseterArgs, PreseterResponse } from "../util/stubs";
+import { PresenterArgs, PresenterResponse } from "../util/stubs";
 
 export const sendMessageInChannel = async ({
   channelId,
   message,
-}: PreseterArgs): Promise<PreseterResponse> => {
+}: PresenterArgs): Promise<PresenterResponse> => {
   const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
   });

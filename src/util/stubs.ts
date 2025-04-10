@@ -1,4 +1,5 @@
 import { sendMessageInChannel } from "../presenters/discord";
+import { sendMessage } from "../presenters/farcaster";
 
 export const findOrg = async (
   channelId: string
@@ -53,18 +54,19 @@ export const callLlm = async (prompt: string): Promise<{ reply: string }> => {
   };
 };
 
-type PresenterTypes = "discord" | "adminUi";
+export type PresenterTypes = "discord" | "adminUi" | "farcaster";
 export const presenterFunctions: Record<PresenterTypes, Function> = {
   discord: sendMessageInChannel,
   adminUi: () => undefined,
+  farcaster: sendMessage,
 };
 
-export type PreseterArgs = {
+export type PresenterArgs = {
   channelId: string;
   message: string;
 };
 
-export type PreseterResponse = {
+export type PresenterResponse = {
   status: string;
   error?: unknown;
 };

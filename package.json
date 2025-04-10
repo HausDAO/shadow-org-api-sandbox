@@ -20,6 +20,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@neynar/nodejs-sdk": "^2.26.1",
     "cors": "^2.8.5",
     "discord.js": "^14.18.0",
     "dotenv": "^16.4.5",

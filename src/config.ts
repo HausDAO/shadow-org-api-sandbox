@@ -4,3 +4,5 @@ dotenv.config();
 export const API_KEY = process.env.API_KEY;
 export const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 export const CLIENT_ID = process.env.CLIENT_ID;
+export const NEYNAR_KEY = process.env.NEYNAR_KEY;
+export const NEYNAR_SIGNER_UUID = process.env.NEYNAR_SIGNER_UUID;

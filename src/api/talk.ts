@@ -7,6 +7,7 @@ import {
   findOrg,
   findPersona,
   presenterFunctions,
+  PresenterTypes,
 } from "../util/stubs";
 
 const router = express.Router();
@@ -16,11 +17,17 @@ type TalkResponse = { message: string };
 router.post<{}, TalkResponse>("/", async (req, res, next) => {
   console.log("FOUND");
   try {
-    const { channelId } = req.body;
+    const { channelId, source } = req.body;
     // todo: probably lots of validation
     console.log("req body", req.body);
 
-    if (!channelId) throw "missing channelId";
+    let validSource: PresenterTypes = source || "discord";
+
+    console.log("validSource", validSource);
+
+    if (!validSource) throw "missing valid source";
+
+    if (validSource === "discord" && !channelId) throw "missing channelId";
 
     // load data to identify persona/org/channel/ect..
     // todo: what is the most generic input we can take here to identify needed db elements
@@ -29,7 +36,7 @@ router.post<{}, TalkResponse>("/", async (req, res, next) => {
     const org = await findOrg(channelId);
     console.log("org", org);
     const persona = await findPersona(channelId);
-    const channelType = "discord";
+    const channelType = validSource;
     // const channelType = "adminUi";
 
     // load data to seed llm context
